@@ -54,6 +54,7 @@
         #pragma surface surf Toon fullforwardshadows
 
         #pragma shader_feature _PARAMETER_TEXTURE
+        #pragma shader_feature _SUBSURFACE_SCATTERING
 
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0

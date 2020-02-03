@@ -175,6 +175,7 @@ half4 LightingToon(ToonSurfaceOutput s, half3 lightDir, half3 viewDir, half atte
     
     
     // Scattering
+#if _SUBSURFACE_SCATTERING
     half SSMidLWin_M = Gaussion(NoL, _MidDivision, _ScatteringAttenuation * _ScatteringSize);
     half SSMidDWin_M = Gaussion(NoL, _MidDivision, _ScatteringSize);
 
@@ -191,9 +192,15 @@ half4 LightingToon(ToonSurfaceOutput s, half3 lightDir, half3 viewDir, half atte
     half3 SSLumin2_M = ((MidDWin + DarkWin) * diffuseLumin2) * (SSMidDWin_M + SSMidDWin2_M + SSMidDWin_D + SSMidDWin2_D);
 
     half3 SS = _ScatteringWeight * (SSLumin1_M + SSLumin2_M) * _ScatteringColor.rgb;
+#endif
     
     half3 Intensity = diffuse.xxx * s.AmbientOcclusion + specular.xxx * s.SpecularMap + fresnelResult.xxx;
-    c = half4(s.diffColor.rgb, 1.0) * half4(Intensity.xxx, 1.0) * half4(_LightColor0.rgb, 1.0) + half4(SS, 0.0f);
+    c = half4(s.diffColor.rgb, 1.0) * half4(Intensity.xxx, 1.0) * half4(_LightColor0.rgb, 1.0);
+
+#if _SUBSURFACE_SCATTERING
+    c = c + half4(SS, 0.0f);
+#endif
+
     c.a = s.Alpha;
     //c = c * atten;
     return c;

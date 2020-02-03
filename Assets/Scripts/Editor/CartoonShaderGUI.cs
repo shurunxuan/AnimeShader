@@ -262,11 +262,30 @@ public class CartoonShaderGUI : ShaderGUI
     void DrawScatteringSettings()
     {
         StartDrawing("Subsurface Scattering");
-        _materialEditor.ShaderProperty(_ScatteringColor, "Color");
-        _materialEditor.ShaderProperty(_ScatteringColorSub, "2nd Color");
-        _materialEditor.ShaderProperty(_ScatteringWeight, "Weight");
-        _materialEditor.ShaderProperty(_ScatteringSize, "Size");
-        _materialEditor.ShaderProperty(_ScatteringAttenuation, "Forward Attenuation");
+        bool toggle = Array.IndexOf(_keywords, "_SUBSURFACE_SCATTERING") != -1;
+        EditorGUI.BeginChangeCheck();
+        
+        toggle = EditorGUILayout.Toggle("Enable", toggle);
+        if (EditorGUI.EndChangeCheck())
+        {
+            if (toggle)
+            {
+                _material.EnableKeyword("_SUBSURFACE_SCATTERING");
+            }
+            else
+            {
+                _material.DisableKeyword("_SUBSURFACE_SCATTERING");
+            }
+        }
+
+        if (_material.IsKeywordEnabled("_SUBSURFACE_SCATTERING"))
+        {
+            _materialEditor.ShaderProperty(_ScatteringColor, "Color");
+            _materialEditor.ShaderProperty(_ScatteringColorSub, "2nd Color");
+            _materialEditor.ShaderProperty(_ScatteringWeight, "Weight");
+            _materialEditor.ShaderProperty(_ScatteringSize, "Size");
+            _materialEditor.ShaderProperty(_ScatteringAttenuation, "Forward Attenuation");
+        }
         EndDrawing();
     }
 
