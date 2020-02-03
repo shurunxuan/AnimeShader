@@ -27,29 +27,29 @@ public class CartoonShaderGUI : ShaderGUI
     private MaterialProperty _EmissionIntensity = null;
 
     // Ambient Occlusion
-    private MaterialProperty _AO = null;
-    private MaterialProperty _AmbientOcclusion = null;
+    private MaterialProperty _AOMap = null;
+    private MaterialProperty _AOWeight = null;
 
     // Diffuse
-    private MaterialProperty _ShadowAttWeight = null;
-    private MaterialProperty _DividLineH = null;
-    private MaterialProperty _DividLineM = null;
-    private MaterialProperty _DividLineD = null;
+    private MaterialProperty _ShadowAttenuation = null;
+    private MaterialProperty _HighDivision = null;
+    private MaterialProperty _MidDivision = null;
+    private MaterialProperty _LowDivision = null;
 
     // Specular
     private MaterialProperty _SpecMap = null;
-    private MaterialProperty _DividLineSpec = null;
+    private MaterialProperty _SpecDivision = null;
     private MaterialProperty _SpecIntensity = null;
 
     // Fresnel
-    private MaterialProperty _FresnelEff = null;
+    private MaterialProperty _FresnelIntensity = null;
 
     // SubSurface Scattering
-    private MaterialProperty _SSSColor = null;
-    private MaterialProperty _SSSColorSub = null;
-    private MaterialProperty _SSSWeight = null;
-    private MaterialProperty _SSSSize = null;
-    private MaterialProperty _SSForwardAtt = null;
+    private MaterialProperty _ScatteringColor = null;
+    private MaterialProperty _ScatteringColorSub = null;
+    private MaterialProperty _ScatteringWeight = null;
+    private MaterialProperty _ScatteringSize = null;
+    private MaterialProperty _ScatteringAttenuation = null;
 
     // Outline
     private MaterialProperty _OutlineWidth = null;
@@ -93,25 +93,25 @@ public class CartoonShaderGUI : ShaderGUI
         _EmissionMap = FindProperty("_EmissionMap", _props);
         _EmissionIntensity = FindProperty("_EmissionIntensity", _props);
 
-        _AO = FindProperty("_AO", _props);
-        _AmbientOcclusion = FindProperty("_AmbientOcclusion", _props);
+        _AOMap = FindProperty("_AOMap", _props);
+        _AOWeight = FindProperty("_AOWeight", _props);
 
-        _ShadowAttWeight = FindProperty("_ShadowAttWeight", _props);
-        _DividLineH = FindProperty("_DividLineH", _props);
-        _DividLineM = FindProperty("_DividLineM", _props);
-        _DividLineD = FindProperty("_DividLineD", _props);
+        _ShadowAttenuation = FindProperty("_ShadowAttenuation", _props);
+        _HighDivision = FindProperty("_HighDivision", _props);
+        _MidDivision = FindProperty("_MidDivision", _props);
+        _LowDivision = FindProperty("_LowDivision", _props);
 
         _SpecMap = FindProperty("_SpecMap", _props);
-        _DividLineSpec = FindProperty("_DividLineSpec", _props);
+        _SpecDivision = FindProperty("_SpecDivision", _props);
         _SpecIntensity = FindProperty("_SpecIntensity", _props);
 
-        _FresnelEff = FindProperty("_FresnelEff", _props);
+        _FresnelIntensity = FindProperty("_FresnelIntensity", _props);
 
-        _SSSColor = FindProperty("_SSSColor", _props);
-        _SSSColorSub = FindProperty("_SSSColorSub", _props);
-        _SSSWeight = FindProperty("_SSSWeight", _props);
-        _SSSSize = FindProperty("_SSSSize", _props);
-        _SSForwardAtt = FindProperty("_SSForwardAtt", _props);
+        _ScatteringColor = FindProperty("_ScatteringColor", _props);
+        _ScatteringColorSub = FindProperty("_ScatteringColorSub", _props);
+        _ScatteringWeight = FindProperty("_ScatteringWeight", _props);
+        _ScatteringSize = FindProperty("_ScatteringSize", _props);
+        _ScatteringAttenuation = FindProperty("_ScatteringAttenuation", _props);
 
         _OutlineWidth = FindProperty("_OutlineWidth", _props);
         _OutlineColor = FindProperty("_OutlineColor", _props);
@@ -226,19 +226,19 @@ public class CartoonShaderGUI : ShaderGUI
     {
         StartDrawing("Ambient Occlusion");
         EditorGUIUtility.labelWidth = 0;
-        _materialEditor.TexturePropertySingleLine(new GUIContent("Occlusion Map"), _AO);
+        _materialEditor.TexturePropertySingleLine(new GUIContent("Occlusion Map"), _AOMap);
         EditorGUIUtility.labelWidth = ofs;
-        _materialEditor.ShaderProperty(_AmbientOcclusion, "Weight");
+        _materialEditor.ShaderProperty(_AOWeight, "Weight");
         EndDrawing();
     }
 
     void DrawDiffuseSettings()
     {
         StartDrawing("Diffuse");
-        _materialEditor.ShaderProperty(_ShadowAttWeight, "Shadow Attenuation");
-        _materialEditor.ShaderProperty(_DividLineH, "High Division");
-        _materialEditor.ShaderProperty(_DividLineM, "Mid Division");
-        _materialEditor.ShaderProperty(_DividLineD, "Dark Division");
+        _materialEditor.ShaderProperty(_ShadowAttenuation, "Shadow Attenuation");
+        _materialEditor.ShaderProperty(_HighDivision, "High Division");
+        _materialEditor.ShaderProperty(_MidDivision, "Mid Division");
+        _materialEditor.ShaderProperty(_LowDivision, "Dark Division");
         EndDrawing();
     }
 
@@ -253,20 +253,20 @@ public class CartoonShaderGUI : ShaderGUI
             EditorGUIUtility.labelWidth = ofs;
         }
 
-        _materialEditor.ShaderProperty(_DividLineSpec, "Division");
+        _materialEditor.ShaderProperty(_SpecDivision, "Division");
         _materialEditor.ShaderProperty(_SpecIntensity, "Intensity");
-        _materialEditor.ShaderProperty(_FresnelEff, "Fresnel");
+        _materialEditor.ShaderProperty(_FresnelIntensity, "Fresnel");
         EndDrawing();
     }
 
     void DrawScatteringSettings()
     {
         StartDrawing("Subsurface Scattering");
-        _materialEditor.ShaderProperty(_SSSColor, "Color");
-        _materialEditor.ShaderProperty(_SSSColorSub, "2nd Color");
-        _materialEditor.ShaderProperty(_SSSWeight, "Weight");
-        _materialEditor.ShaderProperty(_SSSSize, "Size");
-        _materialEditor.ShaderProperty(_SSForwardAtt, "Forward Attenuation");
+        _materialEditor.ShaderProperty(_ScatteringColor, "Color");
+        _materialEditor.ShaderProperty(_ScatteringColorSub, "2nd Color");
+        _materialEditor.ShaderProperty(_ScatteringWeight, "Weight");
+        _materialEditor.ShaderProperty(_ScatteringSize, "Size");
+        _materialEditor.ShaderProperty(_ScatteringAttenuation, "Forward Attenuation");
         EndDrawing();
     }
 

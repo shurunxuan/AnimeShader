@@ -1,10 +1,5 @@
-﻿#pragma shader_feature _PARAMETER_TEXTURE
-
-// Use shader model 3.0 target, to get nicer looking lighting
-#pragma target 3.0
-
-sampler2D _MainTex;
-sampler2D _AO;
+﻿sampler2D _MainTex;
+sampler2D _AOMap;
 sampler2D _EmissionMap;
 sampler2D _ParTex;
 #if _NORMAL_MAP
@@ -23,25 +18,25 @@ struct Input
 half _Glossiness;
 half _Metallic;
 fixed4 _Color;
-half _ShadowAttWeight;
+half _ShadowAttenuation;
 
 float3 _Emission;
 half _EmissionIntensity;
 
-fixed _AmbientOcclusion;
+fixed _AOWeight;
 
-fixed _DividLineH;
-fixed _DividLineM;
-fixed _DividLineD;
-fixed _DividLineSpec;
+fixed _HighDivision;
+fixed _MidDivision;
+fixed _LowDivision;
+fixed _SpecDivision;
 fixed _SpecIntensity;
-fixed _FresnelEff;
+fixed _FresnelIntensity;
 
-fixed4 _SSSColor;
-fixed4 _SSSColorSub;
-half _SSSWeight;
-half _SSSSize;
-half _SSForwardAtt;
+fixed4 _ScatteringColor;
+fixed4 _ScatteringColorSub;
+half _ScatteringWeight;
+half _ScatteringSize;
+half _ScatteringAttenuation;
 
 struct ToonSurfaceOutput
 {
@@ -130,22 +125,22 @@ half4 LightingToon(ToonSurfaceOutput s, half3 lightDir, half3 viewDir, half atte
     half3 nNormal = normalize(s.Normal);			
     float3 reflectDir = reflect(-viewDir, s.Normal);
 
-    half NoL = dot(nNormal, lightDir) + _ShadowAttWeight * (atten - 1);
+    half NoL = dot(nNormal, lightDir) + _ShadowAttenuation * (atten - 1);
     half3 HDir = normalize(lightDir + viewDir);
-    half NoH = Pow2(dot(nNormal, HDir)) + _ShadowAttWeight * (atten - 1);
+    half NoH = Pow2(dot(nNormal, HDir)) + _ShadowAttenuation * (atten - 1);
     half VoN = dot(nNormal, viewDir);
     half VoL = dot(viewDir, lightDir);
-    half VoH = dot(viewDir, HDir) + _ShadowAttWeight * 2 * (atten - 1);
+    half VoH = dot(viewDir, HDir) + _ShadowAttenuation * 2 * (atten - 1);
 
-    half SSLambert = warp(NoL, _SSSWeight);
+    half SSLambert = warp(NoL, _ScatteringWeight);
 
     half _BoundSharp = 9.5 * Pow2(s.Smoothness) + 0.5;
     
     
     // Diffuse
-    half HLightSig = sigmoid(NoL, _DividLineH, _BoundSharp);
-    half MidSig = sigmoid(NoL, _DividLineM, _BoundSharp);
-    half DarkSig = sigmoid(NoL, _DividLineD, _BoundSharp);
+    half HLightSig = sigmoid(NoL, _HighDivision, _BoundSharp);
+    half MidSig = sigmoid(NoL, _MidDivision, _BoundSharp);
+    half DarkSig = sigmoid(NoL, _LowDivision, _BoundSharp);
 
     half HLightWin = HLightSig;
     half MidLWin = MidSig - HLightSig;
@@ -153,10 +148,10 @@ half4 LightingToon(ToonSurfaceOutput s, half3 lightDir, half3 viewDir, half atte
     half DarkWin = 1 - DarkSig;
     
     
-    half diffuseLumin0 = (1 + ndc2Normal(_DividLineH)) / 2;
-    half diffuseLumin1 = (ndc2Normal(_DividLineH) + ndc2Normal(_DividLineM)) / 2;
-    half diffuseLumin2 = (ndc2Normal(_DividLineM) + ndc2Normal(_DividLineD)) / 2;
-    half diffuseLumin3 = ndc2Normal(_DividLineD) / 2;
+    half diffuseLumin0 = (1 + ndc2Normal(_HighDivision)) / 2;
+    half diffuseLumin1 = (ndc2Normal(_HighDivision) + ndc2Normal(_MidDivision)) / 2;
+    half diffuseLumin2 = (ndc2Normal(_MidDivision) + ndc2Normal(_LowDivision)) / 2;
+    half diffuseLumin3 = ndc2Normal(_LowDivision) / 2;
 
     half diffuse = HLightWin * diffuseLumin0 + MidLWin * diffuseLumin1;
     diffuse += MidDWin * diffuseLumin2 + DarkWin * diffuseLumin3;
@@ -167,7 +162,7 @@ half4 LightingToon(ToonSurfaceOutput s, half3 lightDir, half3 viewDir, half atte
     half a2 = Pow2(roughness);
     
     half NDF0 = D_GGX(a2, 1);
-    half NDF_HBound = NDF0 * _DividLineSpec;
+    half NDF_HBound = NDF0 * _SpecDivision;
     half NDF = D_GGX(a2, saturate(NoH));
     
     half specularWin = sigmoid(NDF, NDF_HBound, _BoundSharp);
@@ -176,26 +171,26 @@ half4 LightingToon(ToonSurfaceOutput s, half3 lightDir, half3 viewDir, half atte
     
     // Fresnel
     half3 fresnel = Fresnel_extend(VoN, float3(0.1, 0.1, 0.1));
-    half3 fresnelResult = _FresnelEff * fresnel * (1 - VoL) / 2;
+    half3 fresnelResult = _FresnelIntensity * fresnel * (1 - VoL) / 2;
     
     
     // Scattering
-    half SSMidLWin_M = Gaussion(NoL, _DividLineM, _SSForwardAtt * _SSSSize);
-    half SSMidDWin_M = Gaussion(NoL, _DividLineM, _SSSSize);
+    half SSMidLWin_M = Gaussion(NoL, _MidDivision, _ScatteringAttenuation * _ScatteringSize);
+    half SSMidDWin_M = Gaussion(NoL, _MidDivision, _ScatteringSize);
 
-    half SSMidLWin2_M = Gaussion(NoL, _DividLineM, _SSForwardAtt * _SSSSize * 0.01);
-    half SSMidDWin2_M = Gaussion(NoL, _DividLineM, _SSSSize * 0.01);
+    half SSMidLWin2_M = Gaussion(NoL, _MidDivision, _ScatteringAttenuation * _ScatteringSize * 0.01);
+    half SSMidDWin2_M = Gaussion(NoL, _MidDivision, _ScatteringSize * 0.01);
     
-    half SSMidLWin_D = Gaussion(NoL, _DividLineD, _SSForwardAtt * _SSSSize);
-    half SSMidDWin_D = Gaussion(NoL, _DividLineD, _SSSSize);
+    half SSMidLWin_D = Gaussion(NoL, _LowDivision, _ScatteringAttenuation * _ScatteringSize);
+    half SSMidDWin_D = Gaussion(NoL, _LowDivision, _ScatteringSize);
 
-    half SSMidLWin2_D = Gaussion(NoL, _DividLineD, _SSForwardAtt * _SSSSize * 0.01);
-    half SSMidDWin2_D = Gaussion(NoL, _DividLineD, _SSSSize * 0.01);
+    half SSMidLWin2_D = Gaussion(NoL, _LowDivision, _ScatteringAttenuation * _ScatteringSize * 0.01);
+    half SSMidDWin2_D = Gaussion(NoL, _LowDivision, _ScatteringSize * 0.01);
 
-    half3 SSLumin1_M = MidLWin * diffuseLumin2 * _SSForwardAtt * (SSMidLWin_M + SSMidLWin2_M + SSMidLWin_D + SSMidLWin2_D);
+    half3 SSLumin1_M = MidLWin * diffuseLumin2 * _ScatteringAttenuation * (SSMidLWin_M + SSMidLWin2_M + SSMidLWin_D + SSMidLWin2_D);
     half3 SSLumin2_M = ((MidDWin + DarkWin) * diffuseLumin2) * (SSMidDWin_M + SSMidDWin2_M + SSMidDWin_D + SSMidDWin2_D);
 
-    half3 SS = _SSSWeight * (SSLumin1_M + SSLumin2_M) * _SSSColor.rgb;
+    half3 SS = _ScatteringWeight * (SSLumin1_M + SSLumin2_M) * _ScatteringColor.rgb;
     
     half3 Intensity = diffuse.xxx * s.AmbientOcclusion + specular.xxx * s.SpecularMap + fresnelResult.xxx;
     c = half4(s.diffColor.rgb, 1.0) * half4(Intensity.xxx, 1.0) * half4(_LightColor0.rgb, 1.0) + half4(SS, 0.0f);
@@ -233,6 +228,6 @@ void surf(Input IN, inout ToonSurfaceOutput o)
     o.diffColor = c.rgb * _Color.rgb;
     o.Alpha = c.a;
     
-    o.AmbientOcclusion = tex2D(_AO, IN.uv_MainTex);
-    o.AmbientOcclusion = o.AmbientOcclusion * (1 - _AmbientOcclusion) + _AmbientOcclusion;
+    o.AmbientOcclusion = tex2D(_AOMap, IN.uv_MainTex);
+    o.AmbientOcclusion = o.AmbientOcclusion * (1 - _AOWeight) + _AOWeight;
 }
