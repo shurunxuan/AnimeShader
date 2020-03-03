@@ -1,11 +1,15 @@
 ﻿sampler2D _MainTex;
 sampler2D _AOMap;
 sampler2D _EmissionMap;
+#if _PARAMETER_TEXTURE
 sampler2D _ParTex;
+#else
+sampler2D _GlossinessMap;
+sampler2D _SpecMap;
+#endif
 #if _NORMAL_MAP
 sampler2D _BumpMap;
 #endif
-sampler2D _SpecMap;
 
 struct Input
 {
@@ -32,11 +36,13 @@ fixed _SpecDivision;
 fixed _SpecIntensity;
 fixed _FresnelIntensity;
 
+#if _SUBSURFACE_SCATTERING
 fixed4 _ScatteringColor;
 fixed4 _ScatteringColorSub;
 half _ScatteringWeight;
 half _ScatteringSize;
 half _ScatteringAttenuation;
+#endif
 
 struct ToonSurfaceOutput
 {
@@ -132,8 +138,6 @@ half4 LightingToon(ToonSurfaceOutput s, half3 lightDir, half3 viewDir, half atte
     half VoL = dot(viewDir, lightDir);
     half VoH = dot(viewDir, HDir) + _ShadowAttenuation * 2 * (atten - 1);
 
-    half SSLambert = warp(NoL, _ScatteringWeight);
-
     half _BoundSharp = 9.5 * Pow2(s.Smoothness) + 0.5;
     
     
@@ -176,6 +180,8 @@ half4 LightingToon(ToonSurfaceOutput s, half3 lightDir, half3 viewDir, half atte
     
     // Scattering
 #if _SUBSURFACE_SCATTERING
+    half SSLambert = warp(NoL, _ScatteringWeight);
+    
     half SSMidLWin_M = Gaussion(NoL, _MidDivision, _ScatteringAttenuation * _ScatteringSize);
     half SSMidDWin_M = Gaussion(NoL, _MidDivision, _ScatteringSize);
 
@@ -230,7 +236,7 @@ void surf(Input IN, inout ToonSurfaceOutput o)
 #if _PARAMETER_TEXTURE
     o.Smoothness = saturate(_Glossiness * saturate(1.0f - tex2D(_ParTex, IN.uv_MainTex).b));
 #else
-    o.Smoothness = _Glossiness;
+    o.Smoothness = saturate(_Glossiness * saturate(1.0f - tex2D(_GlossinessMap, IN.uv_MainTex).r));
 #endif
     o.diffColor = c.rgb * _Color.rgb;
     o.Alpha = c.a;

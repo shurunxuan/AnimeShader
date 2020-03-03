@@ -6,6 +6,7 @@
     
         _Color ("Color", Color) = (1,1,1,1)
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
+        _GlossinessMap ("Smoothness Map", 2D) = "white" {}
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _ParTex ("Parameter Texture", 2D) = "white" {}
         
@@ -13,7 +14,7 @@
         
         [HDR] _Emission("Emission", Color) = (0,0,0,1)
         _EmissionMap("Emission Map", 2D) = "white" {}
-        _EmissionIntensity("Emission Intensity", Range(0, 10)) = 1.0
+        _EmissionIntensity("Emission Intensity", Range(0, 10)) = 0.0
         
         _AOMap("Occlusion Map", 2D) = "white" {}
         _AOWeight("Ambient Occlusion", Range(0, 1)) = 0
@@ -27,7 +28,7 @@
         _SpecDivision("Specular Division", Range(0, 1)) = 0.0
         _SpecIntensity("Specular Intensity", Range(0, 1)) = 1.0
         
-        _FresnelIntensity("Fresnel Effect", Range(0, 1)) = 0.0
+        _FresnelIntensity("Fresnel Effect", Range(0, 1)) = 1.0
         
         _ScatteringColor ("Subsurface Scattering Color", Color) = (1,0,0,1)
 		_ScatteringColorSub("Subsurface Scattering 2nd Color", Color) = (0.8,0,0.2,1)
@@ -35,11 +36,11 @@
 		_ScatteringSize("Subsurface Scattering Size", Range(0,1)) = 0.5
 		_ScatteringAttenuation("Forward Scattering Attenuation", Range(0,1)) = 0.5
         
-		_OutlineWidth("Outline Width", Range(0, 0.5)) = 0.024
-		_OutlineColor("Outline Color", Color) = (0.5,0.5,0.5,1)
+		_OutlineWidth("Outline Width", Range(0, 0.5)) = 0.025
+		_OutlineColor("Outline Color", Color) = (0.0,0.0,0.0,1.0)
 		
         // Settings
-		[HideInInspector] _Fold("__fld", Float) = 1.0
+		[HideInInspector] _Fold("__fld", Float) = 3.0
     }
     
     SubShader

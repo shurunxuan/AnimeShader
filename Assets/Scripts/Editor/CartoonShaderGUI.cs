@@ -15,6 +15,7 @@ public class CartoonShaderGUI : ShaderGUI
     // General Properties
     private MaterialProperty _Color = null;
     private MaterialProperty _MainTex = null;
+    private MaterialProperty _GlossinessMap = null;
     private MaterialProperty _Glossiness = null;
     private MaterialProperty _ParTex = null;
 
@@ -85,6 +86,7 @@ public class CartoonShaderGUI : ShaderGUI
         _Color = FindProperty("_Color", _props);
         _MainTex = FindProperty("_MainTex", _props);
         _Glossiness = FindProperty("_Glossiness", _props);
+        _GlossinessMap = FindProperty("_GlossinessMap", _props);
         _ParTex = FindProperty("_ParTex", _props);
 
         _BumpMap = FindProperty("_BumpMap", _props, false);
@@ -172,6 +174,15 @@ public class CartoonShaderGUI : ShaderGUI
         EditorGUIUtility.labelWidth = 0;
         _materialEditor.TexturePropertySingleLine(new GUIContent("Albedo"), _MainTex, _Color);
         EditorGUIUtility.labelWidth = ofs;
+
+        if (!_material.IsKeywordEnabled("_PARAMETER_TEXTURE"))
+        {
+            GUILayout.Space(2);
+            EditorGUIUtility.labelWidth = 0;
+            _materialEditor.TexturePropertySingleLine(new GUIContent("Smoothness Map"), _GlossinessMap);
+            EditorGUIUtility.labelWidth = ofs;
+        }
+
         _materialEditor.ShaderProperty(_Glossiness, "Smoothness");
         bool toggle = Array.IndexOf(_keywords, "_PARAMETER_TEXTURE") != -1;
         EditorGUI.BeginChangeCheck();
